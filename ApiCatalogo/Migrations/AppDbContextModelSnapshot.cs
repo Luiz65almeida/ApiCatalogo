@@ -43,16 +43,13 @@ namespace ApiCatalogo.Migrations
 
             modelBuilder.Entity("ApiCatalogo.Models.Produto", b =>
                 {
-                    b.Property<int>("ProdutoId")
+                    b.Property<long>("ProdutoId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ProdutoId"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("ProdutoId"));
 
-                    b.Property<int>("CategoriaId")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("CategoriaId1")
+                    b.Property<long>("CategoriaId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DataCadastro")
@@ -75,7 +72,7 @@ namespace ApiCatalogo.Migrations
 
                     b.HasKey("ProdutoId");
 
-                    b.HasIndex("CategoriaId1");
+                    b.HasIndex("CategoriaId");
 
                     b.ToTable("Produtos");
                 });
@@ -84,7 +81,9 @@ namespace ApiCatalogo.Migrations
                 {
                     b.HasOne("ApiCatalogo.Models.Categoria", "Categoria")
                         .WithMany("Produtos")
-                        .HasForeignKey("CategoriaId1");
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Categoria");
                 });
