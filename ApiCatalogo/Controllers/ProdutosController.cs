@@ -28,7 +28,7 @@ namespace ApiCatalogo.Controllers
             return produtos;
         }
 
-        [HttpGet("{id:long}")]
+        [HttpGet("{id:long}", Name = "ObterProduto")]
         public ActionResult<Produto> Get(int id)
         {
             var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
@@ -37,6 +37,19 @@ namespace ApiCatalogo.Controllers
                 return NotFound("Produto não encontrado");
             }
             return produto;
+        }
+
+        [HttpPost]
+        public ActionResult Post (Produto produto)
+        {
+
+            if (produto is null)
+                return BadRequest();
+
+            _Context.Produtos.Add(produto);
+            _Context.SaveChanges();
+
+            return new CreatedAtRouteResult("ObterProduto", new{ id = produto.ProdutoId}, produto);
         }
     }
 }
