@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiCatalogo.Controllers
 {
+
     [Route("[controller]")]
     [ApiController]
     public class ProdutosController : ControllerBase
@@ -25,6 +26,17 @@ namespace ApiCatalogo.Controllers
                 return NotFound("Produtos não encontrados");
             }
             return produtos;
+        }
+
+        [HttpGet("{id:long}")]
+        public ActionResult<Produto> Get(int id)
+        {
+            var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
+            if (produto is null)
+            {
+                return NotFound("Produto não encontrado");
+            }
+            return produto;
         }
     }
 }
