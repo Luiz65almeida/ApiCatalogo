@@ -41,7 +41,7 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post (Produto produto)
+        public ActionResult Post(Produto produto)
         {
 
             if (produto is null)
@@ -50,15 +50,15 @@ namespace ApiCatalogo.Controllers
             _Context.Produtos.Add(produto);
             _Context.SaveChanges();
 
-            return new CreatedAtRouteResult("ObterProduto", new{ id = produto.ProdutoId}, produto);
+            return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put (int id, Produto produto)
+        public ActionResult Put(int id, Produto produto)
         {
             if (id != produto.ProdutoId)
             {
-                
+
                 return BadRequest("Produto não encontrado");
 
             }
@@ -66,6 +66,24 @@ namespace ApiCatalogo.Controllers
             _Context.SaveChanges();
 
             return Ok(produto);
+        }
+
+        [HttpDelete("{id:int}")]
+        public ActionResult Delete(int id)
+        {
+            var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);   
+
+            if (produto is null)
+            {
+                return NotFound("Produto não encontrado");
+            }
+
+            _Context.Produtos.Remove(produto);
+            _Context.SaveChanges();
+
+            return Ok(produto + " Deletado com sucesso");
+
+
         }
     }
 }
