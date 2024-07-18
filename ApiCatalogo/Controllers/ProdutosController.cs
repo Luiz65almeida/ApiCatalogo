@@ -4,86 +4,84 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiCatalogo.Controllers
+namespace ApiCatalogo.Controllers;
+
+[Route("[Controller]")]
+[ApiController]
+public class ProdutosController : ControllerBase
 {
+    private readonly AppDbContext _Context;
 
-    [Route("[controller]")]
-    [ApiController]
-    public class ProdutosController : ControllerBase
+    public ProdutosController(AppDbContext context)
     {
-        private readonly AppDbContext _Context;
+        _Context = context;
+    }
 
-        public ProdutosController(AppDbContext context)
+    [HttpGet]
+    public ActionResult<IEnumerable<Produto>> GetAll()
+    {
+        var produtos = _Context.Produtos.ToList();
+        if (produtos is null)
         {
-            _Context = context;
+            return NotFound("Produtos não encontrados");
         }
+        return produtos;
+    }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<Produto>> GetAll()
+    [HttpGet("{id:long}", Name = "ObterProduto")]
+    public ActionResult<Produto> GetId(int id)
+    {
+        var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
+        if (produto is null)
         {
-            var produtos = _Context.Produtos.ToList();
-            if (produtos is null)
-            {
-                return NotFound("Produtos não encontrados");
-            }
-            return produtos;
+            return NotFound("Produto não encontrado");
         }
+        return produto;
+    }
 
-        [HttpGet("{id:long}", Name = "ObterProduto")]
-        public ActionResult<Produto> GetId(int id)
+    [HttpPost]
+    public ActionResult Post(Produto produto)
+    {
+
+        if (produto is null)
+            return BadRequest();
+
+        _Context.Produtos.Add(produto);
+        _Context.SaveChanges();
+
+        return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
+    }
+
+    [HttpPut("{id:int}")]
+    public ActionResult Put(int id, Produto produto)
+    {
+        if (id != produto.ProdutoId)
         {
-            var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
-            if (produto is null)
-            {
-                return NotFound("Produto não encontrado");
-            }
-            return produto;
-        }
 
-        [HttpPost]
-        public ActionResult Post(Produto produto)
-        {
-
-            if (produto is null)
-                return BadRequest();
-
-            _Context.Produtos.Add(produto);
-            _Context.SaveChanges();
-
-            return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
-        }
-
-        [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Produto produto)
-        {
-            if (id != produto.ProdutoId)
-            {
-
-                return BadRequest("Produto não encontrado");
-
-            }
-            _Context.Entry(produto).State = EntityState.Modified;
-            _Context.SaveChanges();
-
-            return Ok(produto);
-        }
-
-        [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
-        {
-            var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);   
-
-            if (produto is null)
-            {
-                return NotFound("Produto não encontrado");
-            }
-
-            _Context.Produtos.Remove(produto);
-            _Context.SaveChanges();
-
-            return Ok(produto + " Deletado com sucesso");
-
+            return BadRequest("Produto não encontrado");
 
         }
+        _Context.Entry(produto).State = EntityState.Modified;
+        _Context.SaveChanges();
+
+        return Ok(produto);
+    }
+
+    [HttpDelete("{id:int}")]
+    public ActionResult Delete(int id)
+    {
+        var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);   
+
+        if (produto is null)
+        {
+            return NotFound("Produto não encontrado");
+        }
+
+        _Context.Produtos.Remove(produto);
+        _Context.SaveChanges();
+
+        return Ok(produto + " Deletado com sucesso");
+
+
     }
 }
