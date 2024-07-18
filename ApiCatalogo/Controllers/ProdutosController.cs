@@ -2,6 +2,7 @@
 using ApiCatalogo.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiCatalogo.Controllers
 {
@@ -18,7 +19,7 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Produto>> Get()
+        public ActionResult<IEnumerable<Produto>> GetAll()
         {
             var produtos = _Context.Produtos.ToList();
             if (produtos is null)
@@ -29,7 +30,7 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet("{id:long}", Name = "ObterProduto")]
-        public ActionResult<Produto> Get(int id)
+        public ActionResult<Produto> GetId(int id)
         {
             var produto = _Context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
             if (produto is null)
@@ -50,6 +51,21 @@ namespace ApiCatalogo.Controllers
             _Context.SaveChanges();
 
             return new CreatedAtRouteResult("ObterProduto", new{ id = produto.ProdutoId}, produto);
+        }
+
+        [HttpPut("{id:int}")]
+        public ActionResult Put (int id, Produto produto)
+        {
+            if (id != produto.ProdutoId)
+            {
+                
+                return BadRequest("Produto não encontrado");
+
+            }
+            _Context.Entry(produto).State = EntityState.Modified;
+            _Context.SaveChanges();
+
+            return Ok(produto);
         }
     }
 }
