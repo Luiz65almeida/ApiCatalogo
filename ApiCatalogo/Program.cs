@@ -1,34 +1,51 @@
 using ApiCatalogo.Context;
+using ApiCatalogo.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-string mySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
+// Configuração dos serviços
+ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+// Configuração do pipeline de requisições
+ConfigureMiddleware(app);
 
 app.Run();
+
+void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+{
+    // Adiciona suporte a controladores e configura JSON para ignorar ciclos de referência
+    services.AddControllers()
+        .AddJsonOptions(options =>
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+    // Configuração do Swagger
+    services.AddEndpointsApiExplorer();
+    services.AddSwaggerGen();
+
+    // Configuração do banco de dados
+    string mySqlConnection = configuration.GetConnectionString("DefaultConnection");
+    services.AddDbContext<AppDbContext>(options =>
+        options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
+
+    // Injeção de dependências
+    services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+    services.AddScoped<IProdutoRepository, ProdutoRepository>();
+    services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+}
+
+void ConfigureMiddleware(WebApplication app)
+{
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseAuthorization();
+    app.MapControllers();
+}

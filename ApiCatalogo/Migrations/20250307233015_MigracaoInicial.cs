@@ -16,19 +16,19 @@ namespace ApiCatalogo.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "categorias",
+                name: "Categorias",
                 columns: table => new
                 {
-                    CategoriaId = table.Column<long>(type: "bigint", nullable: false)
+                    CategoriaId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Nome = table.Column<string>(type: "longtext", nullable: true)
+                    Nome = table.Column<string>(type: "varchar(80)", maxLength: 80, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ImagemUrl = table.Column<string>(type: "longtext", nullable: true)
+                    ImagemUrl = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_categorias", x => x.CategoriaId);
+                    table.PrimaryKey("PK_Categorias", x => x.CategoriaId);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -38,33 +38,33 @@ namespace ApiCatalogo.Migrations
                 {
                     ProdutoId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Nome = table.Column<string>(type: "longtext", nullable: true)
+                    Nome = table.Column<string>(type: "varchar(80)", maxLength: 80, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Descricao = table.Column<string>(type: "longtext", nullable: true)
+                    Descricao = table.Column<string>(type: "varchar(80)", maxLength: 80, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Preco = table.Column<decimal>(type: "decimal(14,4)", nullable: false),
-                    ImagemUrl = table.Column<string>(type: "longtext", nullable: true)
+                    Preco = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    ImagemUrl = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Estoque = table.Column<float>(type: "float", nullable: false),
                     DataCadastro = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CategoriaId = table.Column<long>(type: "bigint", nullable: false)
+                    CategoriaId = table.Column<long>(type: "bigint", nullable: false),
+                    CategoriaId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Produtos", x => x.ProdutoId);
                     table.ForeignKey(
-                        name: "FK_Produtos_categorias_CategoriaId",
-                        column: x => x.CategoriaId,
-                        principalTable: "categorias",
-                        principalColumn: "CategoriaId",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Produtos_Categorias_CategoriaId1",
+                        column: x => x.CategoriaId1,
+                        principalTable: "Categorias",
+                        principalColumn: "CategoriaId");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Produtos_CategoriaId",
+                name: "IX_Produtos_CategoriaId1",
                 table: "Produtos",
-                column: "CategoriaId");
+                column: "CategoriaId1");
         }
 
         /// <inheritdoc />
@@ -74,7 +74,7 @@ namespace ApiCatalogo.Migrations
                 name: "Produtos");
 
             migrationBuilder.DropTable(
-                name: "categorias");
+                name: "Categorias");
         }
     }
 }

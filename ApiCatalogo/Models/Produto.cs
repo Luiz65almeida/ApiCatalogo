@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ApiCatalogo.Models;
 
@@ -7,7 +8,7 @@ namespace ApiCatalogo.Models;
 public class Produto{
 
     [Key]
-    public long ProdutoId { get; set; }
+    public int ProdutoId { get; set; }
 
     [Required]
     [StringLength(80)]
@@ -31,5 +32,6 @@ public class Produto{
 
     public long CategoriaId { get; set; }
 
+    [JsonIgnore]
     public Categoria? Categoria { get; set; }
 }

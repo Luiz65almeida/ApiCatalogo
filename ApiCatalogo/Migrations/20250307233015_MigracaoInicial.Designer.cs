@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiCatalogo.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240709171327_PopulaCategorias")]
-    partial class PopulaCategorias
+    [Migration("20250307233015_MigracaoInicial")]
+    partial class MigracaoInicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace ApiCatalogo.Migrations
 
             modelBuilder.Entity("ApiCatalogo.Models.Categoria", b =>
                 {
-                    b.Property<long>("CategoriaId")
+                    b.Property<int>("CategoriaId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("CategoriaId"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("CategoriaId"));
 
                     b.Property<string>("ImagemUrl")
                         .IsRequired()
@@ -59,6 +59,9 @@ namespace ApiCatalogo.Migrations
                     b.Property<long>("CategoriaId")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("CategoriaId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime(6)");
 
@@ -85,7 +88,7 @@ namespace ApiCatalogo.Migrations
 
                     b.HasKey("ProdutoId");
 
-                    b.HasIndex("CategoriaId");
+                    b.HasIndex("CategoriaId1");
 
                     b.ToTable("Produtos");
                 });
@@ -94,9 +97,7 @@ namespace ApiCatalogo.Migrations
                 {
                     b.HasOne("ApiCatalogo.Models.Categoria", "Categoria")
                         .WithMany("Produtos")
-                        .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoriaId1");
 
                     b.Navigation("Categoria");
                 });
