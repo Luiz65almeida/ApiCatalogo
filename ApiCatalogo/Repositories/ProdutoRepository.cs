@@ -1,5 +1,7 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.Models;
+using ApiCatalogo.Repositories.Interfaces;
+using ApiCatalogo.Repositories.Utils;
 
 namespace ApiCatalogo.Repositories;
 public class ProdutoRepository : Repository<Produto>, IProdutoRepository

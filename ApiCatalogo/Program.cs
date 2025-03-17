@@ -1,5 +1,8 @@
 using ApiCatalogo.Context;
+using ApiCatalogo.DTOs.Mappings;
 using ApiCatalogo.Repositories;
+using ApiCatalogo.Repositories.Interfaces;
+using ApiCatalogo.Repositories.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -26,6 +29,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
 
+    services.AddAutoMapper(typeof(ProdutoDTOMappingProfile));
+
     // Configuração do banco de dados
     string mySqlConnection = configuration.GetConnectionString("DefaultConnection");
     services.AddDbContext<AppDbContext>(options =>
@@ -35,6 +40,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<ICategoriaRepository, CategoriaRepository>();
     services.AddScoped<IProdutoRepository, ProdutoRepository>();
     services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+    services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 }
 
 void ConfigureMiddleware(WebApplication app)
