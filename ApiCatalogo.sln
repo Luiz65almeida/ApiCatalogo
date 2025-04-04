@@ -1,9 +1,8 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.4.33205.214
+VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiCatalogo", "ApiCatalogo\ApiCatalogo.csproj", "{65D3C789-6634-47F9-BFA8-917D033E0FEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiCatalogo", "ApiCatalogo\ApiCatalogo.csproj", "{51EBD5A0-FA71-BF41-FADA-815DEE748B54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +10,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{65D3C789-6634-47F9-BFA8-917D033E0FEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65D3C789-6634-47F9-BFA8-917D033E0FEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65D3C789-6634-47F9-BFA8-917D033E0FEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65D3C789-6634-47F9-BFA8-917D033E0FEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51EBD5A0-FA71-BF41-FADA-815DEE748B54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51EBD5A0-FA71-BF41-FADA-815DEE748B54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51EBD5A0-FA71-BF41-FADA-815DEE748B54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51EBD5A0-FA71-BF41-FADA-815DEE748B54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {334446C6-7D3B-4D4E-ADBD-0C1E367D0217}
+		SolutionGuid = {68100474-2A14-4599-A7F8-5A3EC0BC9B97}
 	EndGlobalSection
 EndGlobal

@@ -1,8 +1,9 @@
 using ApiCatalogo.Context;
-using ApiCatalogo.DTOs.Mappings;
 using ApiCatalogo.Repositories;
 using ApiCatalogo.Repositories.Interfaces;
 using ApiCatalogo.Repositories.Utils;
+using APICatalogo.DTOs.Mappings;
+using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -23,13 +24,16 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Adiciona suporte a controladores e configura JSON para ignorar ciclos de referência
     services.AddControllers()
         .AddJsonOptions(options =>
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles)
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+    });
 
     // Configuração do Swagger
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
-
-    services.AddAutoMapper(typeof(ProdutoDTOMappingProfile));
 
     // Configuração do banco de dados
     string mySqlConnection = configuration.GetConnectionString("DefaultConnection");
@@ -41,6 +45,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<IProdutoRepository, ProdutoRepository>();
     services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+    // Configuração do AutoMapper
+    services.AddAutoMapper(typeof(ProdutoDTOMappingProfile));
 
 }
 

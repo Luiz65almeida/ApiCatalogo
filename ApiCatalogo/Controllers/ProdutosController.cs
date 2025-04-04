@@ -1,9 +1,11 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.DTOs;
 using ApiCatalogo.Models;
+using ApiCatalogo.Paginador;
 using ApiCatalogo.Repositories.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,18 +23,26 @@ public class ProdutosController : ControllerBase
         _mapper = mapper;
     }
 
+    [HttpGet("pagination")]
+    public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] 
+                                   ProdutoParameters produtoParameters)
+    {
+        var produtos = _unitOfWork.ProdutoRepository.GetProdutos(produtoParameters);
+
+        var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+
+        return Ok(produtosDto);
+    }
+
     [HttpGet]
     public ActionResult<IEnumerable<ProdutoDTO>> GetAll()
     {
         var produtos = _unitOfWork.ProdutoRepository.GetAll();
-
         if (produtos is null)
         {
-            return NotFound("Produtos não encontrados");
-
+            return NotFound();
         }
-        var produtosDto = _mapper.Map<ProdutoDTO>(produtos);
-
+        var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
         return Ok(produtosDto);
     }
 
@@ -77,6 +87,39 @@ public class ProdutosController : ControllerBase
         var Novoproduto = _mapper.Map<Produto>(novoProduto);
 
         return new CreatedAtRouteResult("ObterProduto", new { id = novoProduto.ProdutoId }, novoProduto);
+    }
+
+    [HttpPatch("{id}/UpadatePartial")]
+    public ActionResult<ProdutoDTOUpdateResponse> Patch
+        (int id, JsonPatchDocument <ProdutoDTOUpadateRequest> patchProdutoDto)
+    {
+
+        if (patchProdutoDto is null || id <= 0)
+        {
+            return BadRequest("Produto não encontrado ou ID menor ou igual a zero");
+        }
+
+        var produto = _unitOfWork.ProdutoRepository.Get(c => c.ProdutoId == id);
+
+        if (produto is null)
+            return NotFound();
+
+        var produtoUpadateRequest = _mapper.Map<ProdutoDTOUpadateRequest>(produto);
+
+        patchProdutoDto.ApplyTo(produtoUpadateRequest, ModelState);
+
+        if(!ModelState.IsValid || TryValidateModel(produtoUpadateRequest)){
+
+            return BadRequest("Erro no validade");
+        }
+
+        _mapper.Map(produtoUpadateRequest, produto);
+
+        _unitOfWork.ProdutoRepository.Update(produto);
+        _unitOfWork.Commit();
+
+        return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
+
     }
 
     [HttpPut("{id:int}")]
