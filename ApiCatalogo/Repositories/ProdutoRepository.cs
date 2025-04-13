@@ -16,12 +16,10 @@ public class ProdutoRepository : Repository<Produto>, IProdutoRepository
     {
         return GetAll().Where(c => c.CategoriaId == id);
     }
-
-    IEnumerable<Produto> IProdutoRepository.GetProdutos(ProdutoParameters produtosParameters)
-    {
-        return GetAll()
-            .OrderBy(p => p.Nome)
-            .Skip((produtosParameters.PageNumber - 1) * produtosParameters.PageSize)
-            .Take(produtosParameters.PageSize).ToList();
-    }
+     public PagedList<Produto> GetProdutos (ProdutoParameters produtoParameters)
+     {
+        var produtos = GetAll().OrderBy(p => p.ProdutoId).AsQueryable();
+        var produtosOrdenados = PagedList<Produto>.ToPagedList(produtos, produtoParameters.PageNumber, produtoParameters.PageSize);
+        return produtosOrdenados;
+     }
 }
