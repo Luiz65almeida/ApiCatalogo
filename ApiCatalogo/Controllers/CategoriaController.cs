@@ -5,6 +5,7 @@ using ApiCatalogo.Models;
 using ApiCatalogo.Paginador;
 using ApiCatalogo.Paginador.Categoria;
 using ApiCatalogo.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -60,7 +61,8 @@ public class CategoriaController : ControllerBase
         var categoriasDto = categorias.ToCategoriaDTOList();
         return Ok(categoriasDto);
     }
-
+    
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAll()
     {
