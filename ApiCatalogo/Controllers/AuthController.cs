@@ -29,6 +29,60 @@ public class AuthController : ControllerBase
         _roleManager = roleManager;
         _configuration = configuration;
     }
+    
+    [HttpPost]
+    [Authorize (Policy = "SuperAdminOnly")]
+    [Route("CreateRole")]
+    public async Task<IActionResult> CreateRole(string roleName)
+    {
+        var roleExists = await _roleManager.RoleExistsAsync(roleName);
+
+        if (!roleExists)
+        {
+            var roleResult = await _roleManager.CreateAsync(new IdentityRole(roleName));
+
+            if (roleResult.Succeeded)
+            {
+                return Ok($"Role {roleName} created");
+            }
+        }
+        else
+        {
+          return  StatusCode(StatusCodes.Status400BadRequest, new ResponseDTO 
+              { Status = "Error", Message = $"Role {roleName} already exists" });
+        }
+
+        return StatusCode(StatusCodes.Status400BadRequest, new ResponseDTO { Status = "Error", Message = $"Role {roleName} already exists" });
+    }
+    
+    [HttpPost]
+    [Authorize (Policy = "SuperAdminOnly")]
+    [Route("AddUserToRole")]
+    public async Task<IActionResult> AddUserToRole(string email, string roleName)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        Console.WriteLine(user);
+
+        if (user != null)
+        {
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            if(result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status200OK,
+                    new ResponseDTO { Status = "Success", Message = 
+                        $"User {user.Email} added to the {roleName} role" });
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new ResponseDTO
+                {
+                    Status = "Error",
+                    Message =$"Error: Unable to add user {user.Email} to the {roleName} role"
+                });
+            }
+        }
+        return BadRequest(new { error = $"Unable to find user {email}" });
+    }
 
     [HttpPost]
     [Route("login")]
@@ -48,6 +102,7 @@ public class AuthController : ControllerBase
             {
                 new Claim(ClaimTypes.Name, user.UserName!), // Nome do usuário
                 new Claim(ClaimTypes.Email, user.Email!),   // Email do usuário
+                new Claim("id", user.UserName!), //Id do usuário e nome
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Identificador único do token
             };
 
@@ -121,6 +176,8 @@ public class AuthController : ControllerBase
     
     [HttpPost]
     [Route("refresh-token")]
+    [Authorize (Policy = "UserOnly")]
+
     public async Task<IActionResult> RefreshToken(TokenModelDTO tokenModel)
     {
         // Valida o corpo da requisição
@@ -176,8 +233,8 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize]
     [HttpPost]
+    [Authorize (Policy = "ExclusiveOnly")]
     [Route("revoke/{username}")]
     public async Task<IActionResult> Revoke(string username)
     {

@@ -4,6 +4,7 @@ using ApiCatalogo.Models;
 using ApiCatalogo.Paginador;
 using ApiCatalogo.Repositories.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -67,8 +68,9 @@ public class ProdutosController : ControllerBase
 
         return Ok(produtosDto);
     }
-
+    
     [HttpGet]
+    [Authorize (Policy = "UserOnly")]
     public async Task< ActionResult<IEnumerable<ProdutoDTO>>> GetAll()
     {
         var produtos = await _unitOfWork.ProdutoRepository.GetAllAsync();

@@ -93,7 +93,6 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Configuração da Autenticação JWT
     var secretKey = builder.Configuration["JWT:SecretKey"]
                     ?? throw new ArgumentException("Invalid secret key!!");
-    
     services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -114,6 +113,22 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(secretKey))
         };
+    });
+    
+    //Configuração políticas de autorização
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+       
+        options.AddPolicy("SuperAdminOnly", policy => 
+                                policy.RequireRole("Admin").RequireClaim("id", "Henrique"));
+        options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+        
+        options.AddPolicy("ExclusivePolicyOnly", policy =>
+            policy.RequireAssertion(context => 
+                context.User.HasClaim(claim =>
+                    claim.Type == "id" && claim.Value == "Henrique" 
+                    || context.User.IsInRole("SuperAdmin"))));
     });
 }
 
