@@ -1,34 +1,36 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using ApiCatalogo.Context;
+using APICatalogo.DTOs.Mappings;
+using ApiCatalogo.Models;
 using ApiCatalogo.Repositories;
 using ApiCatalogo.Repositories.Interfaces;
 using ApiCatalogo.Repositories.Utils;
-using APICatalogo.DTOs.Mappings;
-using Newtonsoft.Json;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using ApiCatalogo.Models;
 using ApiCatalogo.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
+using System.Threading.RateLimiting;
+using APICatalogo.RateLimitOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração dos serviços
+// ConfiguraÃ§Ã£o dos serviÃ§os
 ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
-// Configuração do pipeline de requisições
+//ConfiguraÃ§Ã£odo pipeline de requisiÃ§Ãµes
 ConfigureMiddleware(app);
 
 app.Run();
 
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
-    // Adiciona suporte a controladores e configura JSON para ignorar ciclos de referência
+    // Adiciona suporte a controladores e configura JSON para ignorar ciclos de referÃªncia
     services.AddControllers()
         .AddJsonOptions(options =>
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles)
@@ -37,8 +39,19 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
     });
+    
+    // ConfiguraÃ§Ã£o do CORS
+    var OrigensComAcessoPermitido = "_origensComAcessoPermitido";
+    
+    services.AddCors(options =>
+        options.AddPolicy(name: OrigensComAcessoPermitido,
+            policy =>
+            {
+                policy.WithOrigins("http://www.apirequest.io");
+            })
+    );
 
-    // Configuração do Swagger
+    // ConfiguraÃ§Ã£o do Swagger
     services.AddEndpointsApiExplorer();
     
     services.AddSwaggerGen(c =>
@@ -70,27 +83,27 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         });
     });
 
-    // Configuração do Identity
+    // ConfiguraÃ§Ã£o do Identity
     services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
     
-    // Configuração do banco de dados
+    // ConfiguraÃ§Ã£o do banco de dados
     string mySqlConnection = configuration.GetConnectionString("DefaultConnection");
     services.AddDbContext<AppDbContext>(options =>
         options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
 
-    // Injeção de dependências
+    // InjeÃ§Ã£o de dependÃªncias
     services.AddScoped<ICategoriaRepository, CategoriaRepository>();
     services.AddScoped<IProdutoRepository, ProdutoRepository>();
     services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     services.AddScoped<IUnitOfWork, UnitOfWork>();
     services.AddScoped<ITokenService, TokenService>();
 
-    // Configuração do AutoMapper
+    // ConfiguraÃ§Ã£o do AutoMapper
     services.AddAutoMapper(typeof(ProdutoDTOMappingProfile));
     
-    // Configuração da Autenticação JWT
+    // CConfiguraÃ§Ã£o da AutenticaÃ§Ã£o JWT
     var secretKey = builder.Configuration["JWT:SecretKey"]
                     ?? throw new ArgumentException("Invalid secret key!!");
     services.AddAuthentication(options =>
@@ -115,7 +128,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         };
     });
     
-    //Configuração políticas de autorização
+    //ConfiguraÃ§Ã£o polÃ­ticas de autorizaÃ§Ã£o
     services.AddAuthorization(options =>
     {
         options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -130,6 +143,27 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
                     claim.Type == "id" && claim.Value == "Henrique" 
                     || context.User.IsInRole("SuperAdmin"))));
     });
+    
+    //Rate Limiting
+    var myOptions = new MyRateLimitOptions();
+    builder.Configuration.GetSection(MyRateLimitOptions.MyRateLimit).Bind(myOptions);
+
+    services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpcontext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpcontext.User.Identity?.Name ??
+                              httpcontext.Request.Headers.Host.ToString(),
+                factory: partition => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit =myOptions.Window,
+                    QueueLimit = myOptions.QueueLimit,
+                    Window = TimeSpan.FromSeconds(myOptions.Window)
+                }));
+    });
 }
 
 void ConfigureMiddleware(WebApplication app)
@@ -139,6 +173,8 @@ void ConfigureMiddleware(WebApplication app)
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+    app.UseRateLimiter();
+    app.UseCors();
 
     app.UseHttpsRedirection();
     app.UseAuthorization();

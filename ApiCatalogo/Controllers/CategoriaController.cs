@@ -64,6 +64,7 @@ public class CategoriaController : ControllerBase
     
     [Authorize]
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAll()
     {
         var categorias = await _unitOfWork.CategoriaRepository.GetAllAsync();
